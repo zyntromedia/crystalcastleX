@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrystalCastleX CI/CD Workflow</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b1020;
+      --surface: #121a2b;
+      --surface-2: #18233a;
+      --text: #e8eefc;
+      --muted: #aab7d4;
+      --accent: #7dd3fc;
+      --border: #2b3957;
+      --code: #080d18;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    main {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin-top: 48px;
+      color: var(--accent);
+    }
+
+    h3 {
+      margin-top: 32px;
+    }
+
+    p {
+      color: var(--muted);
+    }
+
+    .hero {
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(125, 211, 252, 0.08),
+          transparent 50%
+        ),
+        var(--surface);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      margin-right: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--accent);
+      font-size: 0.85rem;
+    }
+
+    .flow {
+      display: grid;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: "↓";
+      position: absolute;
+      left: 50%;
+      bottom: -27px;
+      transform: translateX(-50%);
+      color: var(--accent);
+      font-size: 1.5rem;
+      z-index: 2;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .flow-step span {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .code-wrapper {
+      position: relative;
+      margin: 20px 0;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 0;
+      padding: 20px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--code);
+      color: #dbeafe;
+      font-family:
+        "JetBrains Mono",
+        "Fira Code",
+        Consolas,
+        monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family:
+        "JetBrains Mono",
+        "Fira Code",
+        Consolas,
+        monospace;
+    }
+
+    .inline-code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      color: var(--accent);
+    }
+
+    .note {
+      margin: 24px 0;
+      padding: 20px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .note strong {
+      color: var(--text);
+    }
+
+    ul {
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 10px 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .card {
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    footer {
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        width: min(100% - 20px, 1100px);
+        padding-top: 24px;
+      }
+
+      .hero {
+        padding: 22px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      pre {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+
+    <section class="hero">
+      <span class="badge">CrystalCastleX</span>
+      <span class="badge">GitHub Actions</span>
+      <span class="badge">Provenance</span>
+      <span class="badge">GHCR</span>
+
+      <h1>Unified CI/CD Workflow</h1>
+
+      <p>
+        Workflow เดียวสำหรับ CrystalCastleX ที่รวม
+        validation, build, artifact upload, provenance attestation,
+        Docker image attestation และ verification ไว้ใน pipeline เดียว
+      </p>
+
+      <p>
+        The workflow combines validation, build, artifact upload,
+        provenance attestation, Docker image attestation, and
+        verification into one GitHub Actions pipeline.
+      </p>
+    </section>
+
+    <section>
+      <h2>Workflow Architecture</h2>
+
+      <div class="flow">
+
+        <div class="flow-step">
+          <strong>Push / Pull Request</strong>
+          <span>เริ่ม workflow จาก repository events</span>
+        </div>
+
+        <div class="flow-step">
+          <strong>Validate &amp; Build</strong>
+          <span>
+            npm ci → npm run lint → tsc --noEmit → npm run build
+          </span>
+        </div>
+
+        <div class="flow-step">
+          <strong>Upload Artifact</strong>
+          <span>
+            สร้างและ upload build artifact เช่น .tar.gz
+          </span>
+        </div>
+
+        <div class="flow-step">
+          <strong>Docker Build</strong>
+          <span>
+            Build ด้วย Docker Buildx และ push image ไปยัง GHCR
+          </span>
+        </div>
+
+        <div class="flow-step">
+          <strong>Artifact Attestation</strong>
+          <span>
+            ใช้ actions/attest@v4 สำหรับ binary/build artifact
+          </span>
+        </div>
+
+        <div class="flow-step">
+          <strong>Docker Image Attestation</strong>
+          <span>
+            Attest image ด้วย subject-name และ subject-digest
+          </span>
+        </div>
+
+        <div class="flow-step">
+          <strong>Verify Provenance</strong>
+          <span>
+            ตรวจสอบ artifact และ container attestation ด้วย GitHub CLI
+          </span>
+        </div>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Implementation</h2>
+
+      <p>
+        Implementation ใหม่ใช้
+        <code class="inline-code">actions/attest@v4</code>
+        แทน workflow รุ่นเก่าที่ใช้
+        <code class="inline-code">actions/attest-build-provenance</code>.
+      </p>
+
+      <div class="grid">
+
+        <article class="card">
+          <h3>Artifact Attestation</h3>
+          <p>
+            สำหรับ build artifact ใช้
+            <code class="inline-code">subject-path</code>
+            เพื่อชี้ไปยังไฟล์ที่ต้องการ attest
+          </p>
+        </article>
+
+        <article class="card">
+          <h3>Docker Attestation</h3>
+          <p>
+            สำหรับ container image ใช้
+            <code class="inline-code">subject-name</code>
+            และ
+            <code class="inline-code">subject-digest</code>
+            พร้อม
+            <code class="inline-code">push-to-registry: true</code>
+          </p>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Required GitHub Actions Permissions</h2>
+
+      <p>
+        Artifact provenance ต้องมีสิทธิ์สำหรับ OIDC และ attestation
+        ส่วน Docker image ที่ push ไป GHCR ต้องมี package write permission
+      </p>
+
+      <pre><code>permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  packages: write</code></pre>
+
+      <div class="note">
+        <strong>Security:</strong>
+        ไม่ควรเปิด write permissions สำหรับทุก Pull Request
+        โดยเฉพาะ PR จาก fork เพราะจะเพิ่ม attack surface โดยไม่จำเป็น
+      </div>
+    </section>
+
+    <section>
+      <h2>Artifact Verification</h2>
+
+      <p>
+        หลังจากสร้าง artifact และ attestation แล้ว สามารถตรวจสอบ
+        provenance ด้วย GitHub CLI
+      </p>
+
+      <pre><code>gh attestation verify artifact.tar.gz \
+  --repo OWNER/REPOSITORY</code></pre>
+
+      <p>
+        การ verify ช่วยยืนยันว่า artifact มี provenance ที่สามารถตรวจสอบ
+        กลับไปยัง GitHub Actions workflow ที่สร้าง artifact ได้
+      </p>
+    </section>
+
+    <section>
+      <h2>Docker Image Verification</h2>
+
+      <p>
+        Container attestation ควรตรวจสอบผ่าน OCI reference ที่ใช้
+        immutable digest แทน mutable tag เช่น
+        <code class="inline-code">latest</code>
+      </p>
+
+      <pre><code>gh attestation verify \
+  oci://ghcr.io/OWNER/IMAGE@sha256:DIGEST \
+  --repo OWNER/REPOSITORY</code></pre>
+
+      <div class="note">
+        <strong>Why digest?</strong>
+        Tag สามารถเปลี่ยนไปชี้ image ตัวอื่นได้ แต่ SHA-256 digest
+        เป็น immutable identifier ของ image content
+      </div>
+    </section>
+
+    <section>
+      <h2>Pull Request Security Model</h2>
+
+      <p>
+        สำหรับ Pull Request โดยเฉพาะ PR จาก fork ระบบจะทำ validation และ
+        build/test ตามปกติ แต่จะไม่ push Docker image ไป GHCR และจะไม่สร้าง
+        registry attestation
+      </p>
+
+      <pre><code>Pull Request
+     │
+     ├── npm ci
+     ├── lint
+     ├── TypeScript check
+     ├── build
+     └── test
+          │
+          └── No GHCR Push
+              No Registry Attestation</code></pre>
+
+      <p>
+        สำหรับ branch ที่มีสิทธิ์เขียน repository จึงค่อยเปิดขั้นตอน
+        Docker push และ registry attestation
+      </p>
+    </section>
+
+    <section>
+      <h2>Recommended Pipeline</h2>
+
+      <div class="grid">
+
+        <article class="card">
+          <h3>1. Validate</h3>
+          <ul>
+            <li>Install dependencies ด้วย npm ci</li>
+            <li>Run lint</li>
+            <li>Run TypeScript validation</li>
+            <li>Run tests</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>2. Build</h3>
+          <ul>
+            <li>Build Next.js application</li>
+            <li>Package build output</li>
+            <li>Generate artifact metadata</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>3. Artifact</h3>
+          <ul>
+            <li>Upload artifact ด้วย upload-artifact@v4</li>
+            <li>Generate artifact attestation</li>
+            <li>Keep artifact available across jobs</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>4. Docker</h3>
+          <ul>
+            <li>Build ด้วย Docker Buildx</li>
+            <li>Push ไป GHCR</li>
+            <li>Capture image digest</li>
+            <li>Generate image attestation</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>5. Verification</h3>
+          <ul>
+            <li>Verify artifact provenance</li>
+            <li>Verify OCI image provenance</li>
+            <li>Verify ด้วย immutable digest</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>6. Security</h3>
+          <ul>
+            <li>จำกัด write permissions</li>
+            <li>ไม่ push จาก fork PR</li>
+            <li>ใช้ OIDC สำหรับ provenance</li>
+            <li>ลด CI attack surface</li>
+          </ul>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Key Design Decisions</h2>
+
+      <ul>
+        <li>
+          ใช้ <code class="inline-code">actions/upload-artifact@v4</code>
+          สำหรับ build artifacts
+        </li>
+
+        <li>
+          ใช้ <code class="inline-code">actions/attest@v4</code>
+          สำหรับ artifact provenance
+        </li>
+
+        <li>
+          ใช้ <code class="inline-code">subject-name</code>
+          และ <code class="inline-code">subject-digest</code>
+          สำหรับ Docker image attestation
+        </li>
+
+        <li>
+          ใช้ <code class="inline-code">push-to-registry: true</code>
+          เมื่อ attestation ต้องถูกเก็บไว้กับ registry image
+        </li>
+
+        <li>
+          ใช้ <code class="inline-code">oci://</code>
+          สำหรับ container attestation verification
+        </li>
+
+        <li>
+          ใช้ image digest แทน mutable Docker tag ใน verification
+        </li>
+
+        <li>
+          ไม่เปิด GHCR write และ attestation write สำหรับ fork PR
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Final Pipeline</h2>
+
+      <pre><code>Push / PR
+   │
+   ▼
+┌───────────────────────┐
+│ Validate &amp; Build      │
+│                       │
+│ npm ci                │
+│ npm run lint          │
+│ tsc --noEmit          │
+│ npm run build         │
+└───────────┬───────────┘
+            │
+       ┌────┴─────┐
+       ▼          ▼
+┌────────────┐ ┌───────────────┐
+│ Artifact   │ │ Docker Build  │
+│ Upload     │ │ Buildx        │
+│ .tar.gz    │ │ GHCR          │
+└─────┬──────┘ └───────┬───────┘
+      │                │
+      ▼                ▼
+┌────────────┐ ┌────────────────┐
+│ Artifact   │ │ Docker Image   │
+│ Attestation│ │ Attestation    │
+└─────┬──────┘ └───────┬────────┘
+      │                │
+      └────────┬───────┘
+               ▼
+     ┌────────────────────┐
+     │ Verify Provenance  │
+     │                    │
+     │ gh attestation     │
+     │ verify artifact    │
+     │                    │
+     │ gh attestation     │
+     │ verify OCI image   │
+     └────────────────────┘</code></pre>
+    </section>
+
+    <footer>
+      <p>
+        CrystalCastleX CI/CD · Unified Build, Artifact, Docker,
+        Provenance Attestation &amp; Verification
+      </p>
+    </footer>
+
+  </main>
+</body>
+</html>
