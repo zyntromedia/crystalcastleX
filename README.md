@@ -65,16 +65,26 @@ npm start
 ## 📁 Project Structure
 
 ```
-crystalcastle/
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── pages/           # Application pages
-│   ├── ai/              # AI models and utilities
-│   ├── assets/          # Images, fonts, etc.
-│   └── utils/           # Helper functions
-├── public/              # Static assets
-├── docs/                # Documentation
-└── tests/               # Test files
+crystalcastleX/
+├── 📱 frontend/
+├── ⚙️ backend/           ← ใช้ IncrediBuild ถ้าเป็น C++/Rust/Go
+├── 🎮 game-engine/       ← Unreal/Unity ใช้ IncrediBuild
+├── 🗄️ database/
+├── 🔧 infrastructure/
+│   └── k8s/
+├── 🚀 .github/
+│   └── workflows/
+│       ├── fullstack-k8s-pipeline.yml   ← เพิ่ม IncrediBuild
+│       └── incredibuild-setup.yml       ← ตั้งค่า IncrediBuild
+├── 📦 incredibuild/
+│   ├── Coordinator/
+│   │   └── coordinator.config.xml
+│   ├── Agent/
+│   │   └── agent.config.xml
+│   └── BuildMonitor/
+│       └── monitor.config.json
+└── 🐳 Dockerfile.incredibuild            ← Image พร้อม IncrediBuild
+
 ```
 
 ## 🔧 Configuration
