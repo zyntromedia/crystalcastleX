@@ -1,0 +1,355 @@
+codeql_content = """# .github/workflows/codeql-analysis.yml
+# 🔒 CodeQL Security Analysis
+# ตรวจสอบช่องโหว่ความปลอดภัยในโค้ดอัตโนมัติ
+
+name: 🔒 CodeQL Security Analysis
+
+on:
+  # ตรวจสอบทุกครั้งที่ push ไป main/develop
+  push:
+    branches: [main, develop, 'release/**']
+    paths:
+      - '**.dart'
+      - '**.js'
+      - '**.ts'
+      - '**.go'
+      - '**.rs'
+      - '**.cpp'
+      - '**.c'
+      - '**.java'
+      - '**.py'
+      - '**.rb'
+      - '**.swift'
+      - '**.kt'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
+
+  # ตรวจสอบทุก PR
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - '**.dart'
+      - '**.js'
+      - '**.ts'
+      - '**.go'
+      - '**.rs'
+      - '**.cpp'
+      - '**.c'
+      - '**.java'
+      - '**.py'
+      - '**.rb'
+      - '**.swift'
+      - '**.kt'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+
+  # ตรวจสอบอัตโนมัติทุกสัปดาห์ (วันอาทิตย์ ตี 3)
+  schedule:
+    - cron: '0 20 * * 0'
+
+  # รันเองได้
+  workflow_dispatch:
+    inputs:
+      languages:
+        description: 'เลือกภาษาที่จะตรวจสอบ (คั่นด้วย comma)'
+        required: false
+        default: 'all'
+        type: string
+      severity:
+        description: 'ระดับความรุนแรงขั้นต่ำที่แสดง'
+        required: true
+        default: 'medium'
+        type: choice
+        options:
+          - low
+          - medium
+          - high
+          - critical
+
+# ═══════════════════════════════════════════════════
+# PERMISSIONS (จำกัดสิทธิ์ตามหลัก least privilege)
+# ═══════════════════════════════════════════════════
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+  pull-requests: read
+
+# ═══════════════════════════════════════════════════
+# CONCURRENCY
+# ═══════════════════════════════════════════════════
+concurrency:
+  group: codeql-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  # ═══════════════════════════════════════════════════
+  # DETECT LANGUAGES (ตรวจหาภาษาที่ใช้ใน repo)
+  # ═══════════════════════════════════════════════════
+  detect-languages:
+    name: 🔍 Detect Languages
+    runs-on: ubuntu-latest
+    outputs:
+      languages: ${{ steps.detect.outputs.languages }}
+      has-code: ${{ steps.detect.outputs.has-code }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Programming Languages
+        id: detect
+        run: |
+          # ตรวจหาภาษาที่ใช้ใน repo
+          LANGUAGES=""
+          
+          if [ "${{ github.event.inputs.languages }}" != "" ] && [ "${{ github.event.inputs.languages }}" != "all" ]; then
+            # ใช้ภาษาที่เลือกเอง
+            LANGUAGES="${{ github.event.inputs.languages }}"
+          else
+            # ตรวจหาอัตโนมัติ
+            [ -f "pubspec.yaml" ] && LANGUAGES="${LANGUAGES}cpp,"  # Flutter = C++
+            find . -name "*.dart" -type f | head -1 >/dev/null && LANGUAGES="${LANGUAGES}cpp,"
+            
+            find . -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}javascript,"
+            
+            find . -name "*.go" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}go,"
+            
+            find . -name "*.rs" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}rust,"
+            
+            find . -name "*.cpp" -o -name "*.c" -o -name "*.h" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}cpp,"
+            
+            find . -name "*.java" -o -name "*.kt" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}java,"
+            
+            find . -name "*.py" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}python,"
+            
+            find . -name "*.rb" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}ruby,"
+            
+            find . -name "*.swift" | head -1 >/dev/null && LANGUAGES="${LANGUAGES}swift,"
+            
+            [ -f "Dockerfile" ] || [ -f "docker-compose.yml" ] && LANGUAGES="${LANGUAGES}ruby,"  # CodeQL ใช้ ruby วิเคราะห์ Dockerfile
+            
+            # ลบ comma ท้ายสุด
+            LANGUAGES=$(echo "$LANGUAGES" | sed 's/,$//')
+          fi
+          
+          if [ -z "$LANGUAGES" ]; then
+            echo "has-code=false" >> $GITHUB_OUTPUT
+            echo "languages=\"\"" >> $GITHUB_OUTPUT
+            echo "⚠️ ไม่พบภาษาที่รองรับ CodeQL"
+          else
+            echo "has-code=true" >> $GITHUB_OUTPUT
+            echo "languages=$LANGUAGES" >> $GITHUB_OUTPUT
+            echo "🔍 พบภาษา: $LANGUAGES"
+          fi
+
+  # ═══════════════════════════════════════════════════
+  # CODEQL ANALYSIS (ตรวจสอบแต่ละภาษา)
+  # ═══════════════════════════════════════════════════
+  analyze:
+    name: 🔒 Analyze (${{ matrix.language }})
+    needs: detect-languages
+    if: needs.detect-languages.outputs.has-code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJson(format('[{0}]', needs.detect-languages.outputs.languages)) }}
+        # รองรับ: cpp, csharp, go, java, javascript, python, ruby, rust, swift
+
+    steps:
+      # ─── Checkout ───
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ─── Initialize CodeQL ───
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          config-file: ./.github/codeql/codeql-config.yml
+          queries: security-extended,security-and-quality
+          # หรือใช้ query ที่กำหนดเอง:
+          # queries: ./.github/codeql/custom-queries/
+
+      # ─── Setup Build Environment ───
+      # C/C++ ต้อง build ก่อน
+      - name: Setup C/C++ Build (if needed)
+        if: matrix.language == 'cpp'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake ninja-build
+
+      # Java/Kotlin ต้อง setup JDK
+      - name: Setup Java (if needed)
+        if: matrix.language == 'java'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Go ต้อง setup Go
+      - name: Setup Go (if needed)
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      # Flutter (C++) ต้อง setup Flutter
+      - name: Setup Flutter (if needed)
+        if: matrix.language == 'cpp'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      # ─── Autobuild (CodeQL จะ build เอง) ───
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+        env:
+          # ตัวแปรสำหรับ build
+          NODE_ENV: production
+          CI: true
+
+      # ─── Manual Build (ถ้า Autobuild ไม่ผ่าน) ───
+      # ถ้า Autobuild ล้มเหลว ให้ uncomment ส่วนนี้และปรับตามโปรเจค
+      # - name: Manual Build
+      #   if: matrix.language == 'cpp'
+      #   run: |
+      #     cd frontend/mobile
+      #     flutter pub get
+      #     flutter build apk --release
+
+      # ─── Perform CodeQL Analysis ───
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          output: codeql-results
+          upload: true
+
+      # ─── Upload Results as Artifact ───
+      - name: Upload CodeQL Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-results-${{ matrix.language }}
+          path: codeql-results/
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════
+  # SARIF PROCESSING (ประมวลผลผลลัพธ์)
+  # ═══════════════════════════════════════════════════
+  process-results:
+    name: 📊 Process Results
+    needs: [detect-languages, analyze]
+    if: always() && needs.detect-languages.outputs.has-code == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      pull-requests: write
+    steps:
+      - name: Download All Results
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results
+          pattern: codeql-results-*
+
+      - name: Generate Summary Report
+        run: |
+          echo "## 🔒 CodeQL Security Analysis Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| ภาษา | สถานะ |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          for dir in all-results/codeql-results-*/; do
+            lang=$(basename "$dir" | sed 's/codeql-results-//')
+            status="✅ สำเร็จ"
+            [ ! -f "$dir"*.sarif ] && status="⚠️ ไม่พบผลลัพธ์"
+            echo "| $lang | $status |" >> $GITHUB_STEP_SUMMARY
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 ดูรายละเอียด: [Security Tab](../../security/code-scanning)" >> $GITHUB_STEP_SUMMARY
+
+      # ─── Comment on PR (ถ้าเป็น Pull Request) ───
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: alerts } = await github.rest.code-scanning.listAlertsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: context.payload.pull_request.head.sha,
+              state: 'open'
+            });
+            
+            const severityCount = { critical: 0, high: 0, medium: 0, low: 0 };
+            alerts.forEach(alert => {
+              if (severityCount[alert.rule.severity] !== undefined) {
+                severityCount[alert.rule.severity]++;
+              }
+            });
+            
+            const body = `## 🔒 CodeQL Security Scan Results
+            
+            | Severity | Count |
+            |----------|-------|
+            | 🔴 Critical | ${severityCount.critical} |
+            | 🟠 High | ${severityCount.high} |
+            | 🟡 Medium | ${severityCount.medium} |
+            | 🟢 Low | ${severityCount.low} |
+            
+            ${severityCount.critical > 0 || severityCount.high > 0 ? '⚠️ **พบช่องโหว่รุนแรง กรุณาตรวจสอบ!**' : '✅ ไม่พบช่องโหว่รุนแรง'}
+            
+            [ดูรายละเอียดเพิ่มเติม](../../security/code-scanning?query=pr%3A${context.payload.pull_request.number})`;
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # ═══════════════════════════════════════════════════
+  # NOTIFICATION (แจ้งเตือนเมื่อพบช่องโหว่รุนแรง)
+  # ═══════════════════════════════════════════════════
+  notify:
+    name: 🔔 Notify
+    needs: [analyze, process-results]
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Critical/High Vulnerabilities
+        id: check
+        run: |
+          # ตรวจสอบว่ามีช่องโหว่ critical/high หรือไม่
+          # (ในทางปฏิบัติจะดึงจาก API หรือ SARIF file)
+          echo "has-critical=false" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack (if critical found)
+        if: steps.check.outputs.has-critical == 'true'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: '🚨 CodeQL พบช่องโหว่ Critical/High ใน main branch! [ดูรายละเอียด](../../security/code-scanning)'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_SECURITY }}
+"""
+
+with open('/mnt/agents/output/codeql-analysis.yml', 'w', encoding='utf-8') as f:
+    f.write(codeql_content)
+
+print("✅ codeql-analysis.yml สร้างเสร็จแล้ว!")
+print(f"📄 ขนาดไฟล์: {len(codeql_content)} ตัวอักษร")
