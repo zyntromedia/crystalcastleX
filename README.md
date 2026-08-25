@@ -126,3 +126,5 @@ This project is licensed under the [MIT License](LICENSE) - see the LICENSE file
 - GitHub: https://github.com/Zyntro-Media-AI
 
 ---
+
+https://github.com/1napz/crystalcastleX/issues/9
