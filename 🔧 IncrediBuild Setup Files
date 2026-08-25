@@ -1,0 +1,27 @@
+<!-- incredibuild/Coordinator/coordinator.config.xml -->
+<?xml version="1.0" encoding="UTF-8"?>
+<CoordinatorConfig>
+    <License>
+        <Type>Enterprise</Type>
+        <MaxAgents>20</MaxAgents>
+        <Expiration>2027-12-31</Expiration>
+    </License>
+    
+    <Network>
+        <Port>31104</Port>
+        <BroadcastEnabled>true</BroadcastEnabled>
+        <Subnet>192.168.1.0/24</Subnet>
+    </Network>
+    
+    <Agents>
+        <AutoDiscover>true</AutoDiscover>
+        <MaxConcurrentBuilds>5</MaxConcurrentBuilds>
+        <Priority>High</Priority>
+    </Agents>
+    
+    <Logging>
+        <Level>Info</Level>
+        <Path>/var/log/incredibuild/coordinator.log</Path>
+    </Logging>
+</CoordinatorConfig>
+
