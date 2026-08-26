@@ -1,0 +1,35 @@
+name: CI Optimized
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true   # stop paying for outdated runs
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1      # shallow clone
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'        # or 'pnpm' / 'yarn'
+
+      - name: Cache dependencies (extra safety)
+        uses: actions/cache@v4
+        with:
+          path: \~/.npm
+          key: \( {{ runner.os }}-node- \){{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
