@@ -1,44 +1,48 @@
+# Example configuration file that:
+#  - Uses a private registry for npm updates
+#  - Ignores lodash dependency
+#  - Disables version-updates
+#  - Applies custom labels
+#  - Adds assignees
+#  - Group security updates for golang dependencies into a single pull request
+
 version: 2
+registries:
+  # Define a private npm registry with the name `example`
+  example:
+    type: npm-registry
+    url: https://example.com
+    token: ${{secrets.NPM_TOKEN}}
 updates:
-  # Root Next.js project
-    - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/src/npm-project"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "03:00"
-      timezone: "Asia/Bangkok"
-    open-pull-requests-limit: 5
+      interval: "daily"
+    # For Lodash, ignore all updates
+    ignore:
+      - dependency-name: "lodash"
+    # Disable version updates for npm dependencies
+    open-pull-requests-limit: 0
+    registries:
+      # Ask Dependabot to use the private registry for npm
+      - example
+    # Raise all npm pull requests for security updates with custom labels
     labels:
-            - "dependencies"
-            - "nextjs"
+      - "npm dependencies"
+      - "triage-board"
+    # Raise all npm pull requests for security updates with assignees
+    assignees:
+      - "user-name"
+  - package-ecosystem: "gomod"
+    directories:
+      - "**/*"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
     groups:
-      nextjs:
+      # Group security updates for golang dependencies
+      # into a single pull request
+      golang:
+        applies-to: security-updates
         patterns:
-                    - "next"
-                    - "react*"
-                    - "@types/react*"
-      dev-deps:
-        dependency-type: "development"
-        update-types: ["patch", "minor"]
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-
-  # Docker
-    - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      timezone: "Asia/Bangkok"
-    labels: ["dependencies", "docker"]
-
-  # GitHub Actions
-    - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      timezone: "Asia/Bangkok"
-    labels: ["dependencies", "ci"]
-    commit-message:
-      prefix: "ci"
+          - "golang.org*"
