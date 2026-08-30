@@ -1,0 +1,23 @@
+name: Task - Database Migration Canary
+on: { workflow_dispatch: { inputs: { migration_name: { required: true }}}}
+jobs:
+  migrate:
+    steps:
+      - name: Enable Read Replica 5%
+        run:./db-toggle.sh enable --weight 5
+
+      - name: Run Migration on Replica
+        id: migrate
+        run:./migrate.sh ${{ inputs.migration_name }}
+
+      - name: Health Check Replica
+        run:./db-health.sh
+
+      - name: Promote to 100% or Rollback
+        if: always()
+        run: |
+          if [ "${{ steps.migrate.outcome }}" == "success" ]; then
+           ./db-toggle.sh promote
+          else
+           ./db-toggle.sh rollback
+          fi
