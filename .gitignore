@@ -1,9 +1,43 @@
+# ===================
+# Node dependencies
+# ===================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# ==============
+# Build output
+# ==============
+dist/
+build/
+.vite/
+coverage/
+
+# ======================
+# IDE and OS artifacts
+# ======================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# =====================
+# Logs and temp files
+# =====================
+*.log
+*.tmp
+*.swp
+
+# Deployment
+.vercel/
+
 # 📦 Dependencies
 node_modules/
 .pnp
 .pnp.js
-
+# ==========================≈========
 # 🔐 Environment & Secrets (สำคัญที่สุด)
+# ===================================
 .env
 .env.local
 .env.development.local
@@ -12,25 +46,36 @@ node_modules/
 *.pem
 *.key
 *.cert
+.env.development
+.env.production
+.env.test
 
+# =============
 # 🔧 Next.js
+# =============
 .next/
 out/
 build/
 dist/
 .vercel
 
+# ========================
 # 🧪 Playwright Testing
+# ========================
 test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
 playwright/.auth/
 
+# =======================
 # 🤖 AI Context
 .ai-context.local.md
+# =======================
 
+# ===================
 # 🛠️ System Files
+# ===================
 .DS_Store
 .AppleDouble
 .LSOverride
@@ -42,8 +87,9 @@ ehthumbs_vista.db
 *.swo
 *~
 root.sh
-
+# =========================
 # 📊 Logs & Debugging
+# =========================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -51,7 +97,9 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
+# =========================
 # 🧹 Coverage & Misc Artifacts
+# =========================
 coverage/
 .nyc_output
 .eslintcache
