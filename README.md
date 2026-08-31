@@ -1,4 +1,11 @@
-Based on my research, I found that **Crystal Castle** is described as "A digital fantasy world powered by AI & elegant design" by Zyntro Media AI [[1]]. However, the repository appears to be private or inaccessible, so I cannot see the actual code structure.
+# CrystalCastleX
+
+[![CI](https://github.com/1napz/crystalcastleX/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/1napz/crystalcastleX/actions/workflows/ci.yml)
+[![📦 Auto File Compress & Manage](https://github.com/1napz/crystalcastleX/actions/workflows/auto-compress.yml/badge.svg?branch=main)](https://github.com/1napz/crystalcastleX/actions/workflows/auto-compress.yml)
+[![CodeQL](https://github.com/1napz/crystalcastleX/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/1napz/crystalcastleX/actions/workflows/codeql.yml)
+[![License](https://img.shields.io/github/license/1napz/crystalcastleX)](https://github.com/1napz/crystalcastleX/blob/main/LICENSE)
+[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![GitHub Release](https://img.shields.io/github/v/release/1napz/crystalcastleX?display_name=tag&sort=semver)](https://github.com/1napz/crystalcastleX/releases)
 
 Here's a comprehensive README template tailored for your project. **Please customize the sections in brackets `[ ]` with your specific details:**
 
