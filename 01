@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CrystalCastleX — Production Security Stack</title>
+  <style>
+    :root{--bg:#09111f;--surface:#101d31;--surface2:#162742;--text:#ecf3ff;--muted:#b2c3de;--accent:#72dbff;--line:#28415f;--code:#07101d}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top right,#163c5a 0,transparent 32%),var(--bg);color:var(--text);font:16px/1.65 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{max-width:1120px;margin:auto;padding:48px 20px 80px} h1,h2,h3{line-height:1.25} h1{font-size:clamp(2.2rem,5vw,4rem);margin:.25rem 0 1rem} h2{margin-top:3.8rem;color:var(--accent)} h3{margin:.2rem 0 .6rem} p,li{color:var(--muted)}
+    .hero,.card,.note,pre{border:1px solid var(--line);border-radius:16px;background:rgba(16,29,49,.92)} .hero{padding:clamp(24px,5vw,48px)} .eyebrow{color:var(--accent);font-size:.82rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase}.lead{max-width:760px;font-size:1.12rem}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.tag{padding:4px 10px;border:1px solid var(--line);border-radius:999px;color:var(--accent);font-size:.85rem}.flow{display:grid;grid-template-columns:repeat(7,minmax(135px,1fr));gap:10px;overflow-x:auto;padding-bottom:10px}.step{min-width:145px;padding:18px;background:var(--surface);border:1px solid var(--line);border-radius:13px}.step:not(:last-child)::after{content:"→";float:right;color:var(--accent);font-size:1.4rem}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{padding:22px}.card p{margin:0}.note{padding:20px;border-left:4px solid var(--accent)} pre{overflow:auto;padding:20px;background:var(--code);color:#ddecff;font:13px/1.55 "Cascadia Code",Consolas,monospace} code{font-family:"Cascadia Code",Consolas,monospace} :not(pre)>code{padding:2px 6px;border-radius:5px;background:var(--surface2);color:var(--accent)} footer{margin-top:56px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:.9rem}@media(max-width:700px){main{padding-top:24px}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="eyebrow">CrystalCastleX · CI/CD security</div>
+    <h1>Production-oriented security stack</h1>
+    <p class="lead">ชุดโครงสร้างสำหรับ Docker, Docker Compose, SBOM, provenance attestation และ GitHub Actions security workflow โดยยึดหลัก <em>least privilege</em>.</p>
+    <div class="tags"><span class="tag">Docker</span><span class="tag">GHCR</span><span class="tag">SBOM</span><span class="tag">CodeQL</span><span class="tag">Attestation</span></div>
+  </section>
+
+  <section><h2>Architecture</h2><div class="flow"><div class="step"><strong>Validate</strong><br><small>lint · type-check · build</small></div><div class="step"><strong>Artifact</strong><br><small>upload build output</small></div><div class="step"><strong>Docker</strong><br><small>build and publish image</small></div><div class="step"><strong>Scan</strong><br><small>dependency · CodeQL · Trivy</small></div><div class="step"><strong>SBOM</strong><br><small>generate CycloneDX</small></div><div class="step"><strong>Attest</strong><br><small>prove artifact origin</small></div><div class="step"><strong>Verify</strong><br><small>verify immutable digest</small></div></div></section>
+
+  <section><h2>Dockerfile</h2><p>Multi-stage build แยก dependency, build และ runtime พร้อมรันด้วย non-root user.</p><pre><code># syntax=docker/dockerfile:1.7
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run lint &amp;&amp; npx tsc --noEmit &amp;&amp; npm run build
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN addgroup -S appgroup &amp;&amp; adduser -S appuser -G appgroup
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+USER appuser
+EXPOSE 3000
+CMD ["npm", "start"]</code></pre></section>
+
+  <section><h2>Docker Compose hardening</h2><pre><code>services:
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY:-zyntroai/crystalcastlex}:local
+    ports: ["3000:3000"]
+    environment: { NODE_ENV: production }
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    networks: [crystalcastlex]
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --appendonly, "yes"]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    volumes: [redis-data:/data]
+    networks: [crystalcastlex]
+volumes: { redis-data: {} }
+networks: { crystalcastlex: { driver: bridge } }</code></pre></section>
+
+  <section><h2>Software Bill of Materials</h2><div class="grid"><article class="card"><h3>Generate</h3><pre><code>syft dir:. -o cyclonedx-json &gt; sbom.json</code></pre><p>SBOM เป็นรายการ dependencies เพื่อช่วยติดตามความเสี่ยงของ package และ image.</p></article><article class="card"><h3>Container image</h3><pre><code>syft ghcr.io/OWNER/IMAGE@sha256:DIGEST \
+  -o cyclonedx-json &gt; sbom-container.json</code></pre><p>ใช้ image digest เพื่ออ้างถึง image ที่เปลี่ยนแปลงไม่ได้.</p></article></div></section>
+
+  <section><h2>Security workflow</h2><pre><code>name: Security
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+  schedule: [{ cron: "30 1 * * 0" }]
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/dependency-review-action@v4
+  codeql:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, security-events: write, actions: read }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with: { languages: javascript-typescript }
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+  container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/build-push-action@v6
+        with: { context: ., file: docker/Dockerfile, push: false, tags: crystalcastlex:security }
+      - uses: aquasecurity/trivy-action@master
+        with: { image-ref: crystalcastlex:security, format: table, exit-code: "1", ignore-unfixed: true, severity: CRITICAL,HIGH }
+  sbom:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, id-token: write, attestations: write }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anchore/sbom-action@v0
+        with: { format: cyclonedx-json, output-file: sbom.json, artifact-name: crystalcastlex-sbom }
+      - uses: actions/attest@v4
+        with: { subject-path: sbom.json }</code></pre></section>
+
+  <section><h2>Permission model</h2><div class="grid"><article class="card"><h3>Validate / test</h3><pre><code>permissions:
+  contents: read</code></pre></article><article class="card"><h3>Security scanning</h3><pre><code>permissions:
+  contents: read
+  security-events: write</code></pre></article><article class="card"><h3>Artifact attestation</h3><pre><code>permissions:
+  contents: read
+  id-token: write
+  attestations: write</code></pre></article><article class="card"><h3>Docker release</h3><pre><code>permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write</code></pre></article></div><div class="note"><strong>Pull requests:</strong> PR โดยเฉพาะจาก fork ควร build และ test ได้ แต่ไม่ควรได้รับสิทธิ์ push GHCR หรือสร้าง registry attestation.</div></section>
+
+  <section><h2>Verification</h2><pre><code># Build artifact
+gh attestation verify artifact.tar.gz --repo OWNER/REPOSITORY
+
+# OCI container (use a digest, not a mutable tag)
+gh attestation verify \
+  oci://ghcr.io/OWNER/IMAGE@sha256:DIGEST \
+  --repo OWNER/REPOSITORY</code></pre><p>Digest เป็น immutable identifier จึงเหมาะสำหรับการตรวจสอบ provenance มากกว่า tag เช่น <code>latest</code>.</p></section>
+  <footer>CrystalCastleX security reference · HTML export</footer>
+</main>
+</body>
+</html>
