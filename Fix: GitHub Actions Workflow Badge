@@ -1,0 +1,82 @@
+🔧 Fix: GitHub Actions Workflow Badge — "Link Fetch Error"
+ 
+ปัญหาเกิดจาก Badge URL ไม่ถูกต้อง / Workflow ไม่พร้อมใช้งาน ครับ นี่คือวิธีแก้แบบขั้นตอนต่อไปขั้นตอน:
+ 
+ 
+ 
+✅ ขั้นตอนที่ 1: ตรวจสอบรูปแบบ URL ที่ถูกต้อง
+ 
+รูปแบบมาตรฐานของ GitHub Badge คือ :
+ 
+plaintext
+  
+https://github.com/1napz/crystalcastleX/actions/workflows/logging.yml/badge.svg
+ 
+ 
+สิ่งที่ต้องตรวจสอบ:
+ 
+- ✅ ชื่อไฟล์ตรงกับจริง:  .github/workflows/logging.yml 
+- ✅ Workflow อยู่บน Default Branch (ปกติ  main  หรือ  master )
+- ✅ Workflow ไม่ได้ถูก Disable ใน Settings → Actions
+- ✅ มีการ Run ไปแล้วอย่างน้อย 1 ครั้ง (ถ้ายังไม่เคยรัน Badge จะโหลดไม่ได้)
+ 
+ 
+ 
+🛠️ ขั้นตอนที่ 2: วิธีสร้าง Badge อย่างถูกต้อง (แนะนำ)
+ 
+แทนที่จะพิมพ์เอง ให้ GitHub สร้างให้เลยครับ:
+ 
+1. ไปที่ Actions tab ของ repo → เลือก Workflow  logging 
+2. กดปุ่ม ⋯ (จุด 3 จุด) ที่มุมขวาบน
+3. เลือก Create status badge
+4. เลือก Branch → ก๊อปปี้ Markdown ที่ให้มาไปวางใน README
+ 
+ 
+ 
+📝 ขั้นตอนที่ 3: ใส่ Branch เพื่อความแม่นยำ
+ 
+ถ้า Default Branch ไม่ใช่  main  หรือต้องการระบุชัดเจน ให้เพิ่ม  ?branch=... :
+ 
+markdown
+  
+[![Essential Logging Workflow](https://github.com/1napz/crystalcastleX/actions/workflows/logging.yml/badge.svg?branch=main)](https://github.com/1napz/crystalcastleX/actions/workflows/logging.yml)
+ 
+ 
+💡 เปลี่ยน  main  เป็นชื่อ Branch จริงของคุณ ถ้าใช้ชื่ออื่น
+ 
+ 
+ 
+🔍 ขั้นตอนที่ 4: ตรวจสอบสาเหตุที่เป็นไปได้
+ 
+อาการ สาเหตุ วิธีแก้ 
+❌ 404 Not Found ชื่อไฟล์/ชื่อ repo ผิด ตรวจสอบชื่อไฟล์ใน  .github/workflows/  ให้ตรงกันพอดี ตัวอักษรเล็ก-ใหญ่สำคัญ 
+❌ ไม่มีอะไรแสดง Workflow ยังไม่เคยรัน เปิดไฟล์ workflow → กด Run workflow ด้วยตัวเอง 1 ครั้งก่อน 
+❌ แสดงเป็น "no status" Workflow อยู่บน branch อื่น ไม่ใช่ Default Branch Merge ไฟล์ไปที่  main  ก่อน Badge จะทำงาน 
+❌ ยัง Fetch Error GitHub Cache ค้าง รอ 1-2 นาที แล้วกด Hard Refresh (Ctrl+Shift+R) 
+ 
+ 
+ 
+✅ เวอร์ชันที่แก้ไขแล้ว — คัดลอกวางได้เลย
+ 
+markdown
+  
+[![Essential Logging Workflow](https://github.com/1napz/crystalcastleX/actions/workflows/logging.yml/badge.svg?branch=main&event=push)](https://github.com/1napz/crystalcastleX/actions/workflows/logging.yml)
+ 
+ 
+ถ้ายังไม่ได้ ลองใช้ shields.io เป็นทางเลือก:
+ 
+markdown
+  
+[![Essential Logging Workflow](https://img.shields.io/github/actions/workflow/status/1napz/crystalcastleX/logging.yml?branch=main&label=Logging&logo=github)](https://github.com/1napz/crystalcastleX/actions/workflows/logging.yml)
+ 
+ 
+ 
+ 
+🎯 สรุปสิ่งที่ต้องทำ:
+ 
+1. ตรวจสอบว่าไฟล์  .github/workflows/logging.yml  อยู่บน main branch
+2. รัน Workflow อย่างน้อย 1 ครั้ง
+3. ใช้ URL ที่มี  ?branch=main  ต่อท้าย
+4. อัปเดต README แล้วรีเฟรชหน้า — ปกติจะขึ้นสีเขียว/แดงตามสถานะทันทีครับ! ✅
+ 
+ถ้ายังไม่ได้ บอกผมได้นะครับ จะช่วยดูต่อให้ครับ 🔧
