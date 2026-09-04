@@ -1,128 +1,117 @@
-Based on my research, I found that **Crystal Castle** is described as "A digital fantasy world powered by AI & elegant design" by Zyntro Media AI [[1]]. However, the repository appears to be private or inaccessible, so I cannot see the actual code structure.
-
-Here's a comprehensive README template tailored for your project. **Please customize the sections in brackets `[ ]` with your specific details:**
-
----
-
-# 🏰 Crystal Castle
-
-> **A digital fantasy world powered by AI & elegant design**
-
-![Crystal Castle Banner](./assets/banner.png)
-
-## ✨ Overview
-
-Crystal Castle is an immersive digital fantasy experience that combines cutting-edge artificial intelligence with stunning visual design to create a unique interactive world.
-
-## 🚀 Features
-
-- 🎨 **AI-Powered Design** - Intelligent systems that create dynamic, beautiful environments
-- 🌟 **Interactive Fantasy World** - Explore a rich, immersive digital landscape
-- 🎯 **Responsive Experience** - Seamless performance across devices
-- 🎭 **Personalized Content** - AI-driven customization for each user
-- 📱 **Modern Interface** - Clean, elegant design principles
-
-## 🛠️ Tech Stack
-
-**[Please update with your actual stack, for example:]**
-- **Frontend:** [React/Vue/Next.js/etc.]
-- **Backend:** [Node.js/Python/etc.]
-- **AI/ML:** [TensorFlow/PyTorch/OpenAI/etc.]
-- **Styling:** [Tailwind CSS/SCSS/etc.]
-- **Database:** [PostgreSQL/MongoDB/etc.]
-
-## 📦 Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/Zyntro-Media-AI/crystalcastle.git
-cd crystalcastle
-
-# Install dependencies
-npm install  # or yarn install / pip install -r requirements.txt
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Start development server
-npm run dev
-```
-
-## 🎮 Usage
-
-```bash
-# Development
-npm run dev
-
-# Production build
-npm run build
-
-# Start production server
-npm start
-```
-
-## 📁 Project Structure
-
-```
-crystalcastle/
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── pages/           # Application pages
-│   ├── ai/              # AI models and utilities
-│   ├── assets/          # Images, fonts, etc.
-│   └── utils/           # Helper functions
-├── public/              # Static assets
-├── docs/                # Documentation
-└── tests/               # Test files
-```
-
-## 🔧 Configuration
-
-Key environment variables required:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `API_KEY` | Your API key for AI services | - |
-| `PORT` | Server port | `3000` |
-| `NODE_ENV` | Environment mode | `development` |
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
-
-## 👥 Team
-
-**Zyntro Media AI** - [https://zyntro-media.art/](https://zyntro-media.art/)
-
-## 🙏 Acknowledgments
-
-- AI models and technologies that power Crystal Castle
-- Community contributors and supporters
-
-## 📬 Contact
-
-- Website: https://zyntro-media.art/
-- GitHub: https://github.com/Zyntro-Media-AI
-
----
+📖 README.md — CrystalCastle X
+ 
+Repo:  zyntromedia/crystalcastleX  · AI-Native DevSecOps Platform · Agentic GitLab + Obsidian Integration
+ 
+ 
+ 
+✨ CrystalCastle X — Overview
+ 
+CrystalCastle X is a next‑generation, agentic DevSecOps platform built for speed, security, and full‑stack automation. Combines GitLab 19.3 Agentic DevSecOps, Obsidian Knowledge Vault, AI Orchestration, and Full‑Stack CI/CD — all in one unified ecosystem.
+ 
+🔗 Repo: https://github.com/zyntromedia/crystalcastleX
+ 
+ 
+ 
+🚀 Key Features
+ 
+🧠 Agentic Core
+ 
+- AI‑Assisted Planning & Grooming
+- Smart Code Suggestions + Secret Detection
+- Predictive Testing & Dynamic Security Scans
+- Auto‑Deploy + Policy Enforcement + Rollback
+ 
+🛡️ DevSecOps Built‑In
+ 
+- End‑to‑End Pipeline: Plan → Code → Test → Deploy → Secure
+- AI Threat Detection & Compliance Auditing
+- Immutable Artifacts + Provenance Tracking
+- Obsidian Vault Integration (REST API)
+ 
+📂 Unified Workspace
+ 
+- Knowledge Graph & Traceability:  trace_id  per workflow
+- Bilingual Docs: Thai/English ready
+- Dataview Dashboards + Templater Automation
+- Git Sync + Local REST API
+ 
+ 
+ 
+📁 Repository Structure
+ 
+plaintext
+  
+crystalcastleX/
+├── 📂 .github/               # GitHub config, templates, workflows
+├── 📂 .obsidian/             # Vault settings + plugins
+├── 📂 Vault/
+│   ├── 📑 Core/              # Index, README, CHANGELOG
+│   ├── ⚙️ Config/            # Policies, env, rules
+│   ├── 🛠️ Pipelines/         # CI/CD, GitLab, runners
+│   ├── 📊 Traces/            # Trace logs, audit, history
+│   ├── 🧩 Templates/         # Thread/Note templates
+│   └── 🧪 Examples/          # API, SDK, scripts
+├── 📂 scripts/               # Generate ID, API, setup
+├── 📄 README.md              # ← This file
+└── 📄 LICENSE
+ 
+ 
+ 
+ 
+⚡ Quick Start
+ 
+1️⃣ Clone & Open
+ 
+bash
+  
+git clone https://github.com/zyntromedia/crystalcastleX.git
+cd crystalcastleX
+# Open folder as Obsidian Vault
+ 
+ 
+2️⃣ Setup Obsidian
+ 
+- Install: Local REST API, Templater, Dataview, Obsidian Git
+- API: Host  127.0.0.1:27124 , generate Token
+- Templater: Enable scripts folder  /scripts/ 
+ 
+3️⃣ Create First Trace
+ 
+- Use Template →  New Thread.md 
+- Auto:  trace_id , date, structure
+- View Overview →  Traces/Overview.md 
+ 
+ 
+ 
+🧩 Trace & Thread System
+ 
+Every action gets unique  trace_id: tr_xxxxxx 
+ 
+- Frontmatter auto‑filled
+- Linked logs, artifacts, checks
+- Dataview table for full overview
+ 
+ 
+ 
+🤝 Integration
+ 
+- GitLab 19.3: Agentic pipelines, AI security
+- Obsidian: Local REST API, vault sync
+- FastAPI: Scripts/SDK included
+- Docker/K8s: Deployment‑ready
+ 
+ 
+ 
+📊 Status
+ 
+✅ Active Development · 🟢 API Ready · 🛡️ Secure · 📈 Scalable
+ 
+ 
+ 
+📜 License
+ 
+MIT © 2026 ZyntroMedia
+ 
+ 
+ 
+Would you like me to paste full Markdown, add badges/links, or generate ZIP installer for this repo? 🚀
