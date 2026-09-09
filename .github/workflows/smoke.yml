@@ -6,15 +6,25 @@ on:
     branches:
       - main
 
+# ✅ เพิ่มสิทธิ์ที่จำเป็น — ป้องกัน token ไม่มีสิทธิ์ส่งสถานะ
+permissions:
+  contents: read
+  checks: write
+  statuses: write
+  pull-requests: read
+
 jobs:
   smoke:
+    name: Run Smoke Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # ✅ ป้องกันค้างค้าง
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5  # ✅ อัปเดตเป็น v5
         with:
           python-version: '3.11'
 
@@ -29,19 +39,22 @@ jobs:
       - name: Build and start local stack
         run: |
           docker compose build
-          docker compose up -d
+          docker compose up -d --wait  # ✅ --wait รอให้พร้อมเอง
 
       - name: Wait for service (status endpoint)
         run: |
+          set -e
           for i in {1..30}; do
-            echo "⏳ waiting ($i)..."
-            if curl -sSf http://localhost:8000/v1/status >/dev/null 2>&1; then
-              echo "✅ service up"
+            echo "⏳ Waiting ($i/30)..."
+            if curl -sSf -o /dev/null -w "%{http_code}" http://localhost:8000/v1/status 2>/dev/null | grep -q "200"; then
+              echo "✅ Service healthy at http://localhost:8000/v1/status"
               exit 0
             fi
             sleep 2
           done
-          echo "❌ service did not become healthy" && exit 1
+          echo "❌ Service did not become healthy within 60s"
+          docker compose logs --tail=50  # ✅ แสดง log ตอนล้มเหลว
+          exit 1
 
       - name: Install dev requirements
         run: |
@@ -53,8 +66,9 @@ jobs:
           API_BASE: http://localhost:8000
           X_API_KEY: local-dev-key
         run: |
-          pytest -q tests/test_smoke_generation.py
+          pytest -q tests/test_smoke_generation.py -v
 
       - name: Tear down stack
         if: always()
-        run: docker compose down
+        run: |
+          docker compose down --remove-orphans
