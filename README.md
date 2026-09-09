@@ -1,128 +1,166 @@
-Based on my research, I found that **Crystal Castle** is described as "A digital fantasy world powered by AI & elegant design" by Zyntro Media AI [[1]]. However, the repository appears to be private or inaccessible, so I cannot see the actual code structure.
+# 📄 README.md — crystalcastleX
 
-Here's a comprehensive README template tailored for your project. **Please customize the sections in brackets `[ ]` with your specific details:**
+```markdown
+# 🏰 CrystalCastle X
+
+> **Modular AI-Powered Knowledge & Automation Platform**
+> Build, orchestrate, and deploy intelligent workflows — secure, scalable, observable.
 
 ---
 
-# 🏰 Crystal Castle
+## 🚀 Overview
 
-> **A digital fantasy world powered by AI & elegant design**
+**CrystalCastle X** is a full-stack automation and AI orchestration platform designed for developers, teams, and AI practitioners. It combines **FastAPI backend**, **Docker-ready services**, **GitHub Actions CI/CD**, and **Smoke Tests** into a production-ready foundation.
 
-![Crystal Castle Banner](./assets/banner.png)
+---
 
-## ✨ Overview
+## ✨ Key Features
 
-Crystal Castle is an immersive digital fantasy experience that combines cutting-edge artificial intelligence with stunning visual design to create a unique interactive world.
+- 🧠 **AI Orchestration** — Agent workflows, MCP (Model Context Protocol) integration
+- ⚡ **FastAPI Backend** — High-performance async API, OpenAPI docs, type-safe
+- 🐳 **Local Stack** — One-command development with Docker Compose
+- ✅ **Smoke Tests** — End-to-end health checks on every deployment
+- 🔐 **Security First** — Least-privilege permissions, environment-based config
+- 📊 **Observability** — Status endpoints, structured logging, health monitoring
+- 🧩 **Modular Skills System** — Extensible capabilities via skills directory
+- 📦 **Ready to Deploy** — Docker, CI/CD, and cloud configurations included
 
-## 🚀 Features
-
-- 🎨 **AI-Powered Design** - Intelligent systems that create dynamic, beautiful environments
-- 🌟 **Interactive Fantasy World** - Explore a rich, immersive digital landscape
-- 🎯 **Responsive Experience** - Seamless performance across devices
-- 🎭 **Personalized Content** - AI-driven customization for each user
-- 📱 **Modern Interface** - Clean, elegant design principles
-
-## 🛠️ Tech Stack
-
-**[Please update with your actual stack, for example:]**
-- **Frontend:** [React/Vue/Next.js/etc.]
-- **Backend:** [Node.js/Python/etc.]
-- **AI/ML:** [TensorFlow/PyTorch/OpenAI/etc.]
-- **Styling:** [Tailwind CSS/SCSS/etc.]
-- **Database:** [PostgreSQL/MongoDB/etc.]
-
-## 📦 Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/Zyntro-Media-AI/crystalcastle.git
-cd crystalcastle
-
-# Install dependencies
-npm install  # or yarn install / pip install -r requirements.txt
-
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Start development server
-npm run dev
-```
-
-## 🎮 Usage
-
-```bash
-# Development
-npm run dev
-
-# Production build
-npm run build
-
-# Start production server
-npm start
-```
+---
 
 ## 📁 Project Structure
 
 ```
-crystalcastle/
-├── src/
-│   ├── components/       # Reusable UI components
-│   ├── pages/           # Application pages
-│   ├── ai/              # AI models and utilities
-│   ├── assets/          # Images, fonts, etc.
-│   └── utils/           # Helper functions
-├── public/              # Static assets
-├── docs/                # Documentation
-└── tests/               # Test files
+crystalcastleX/
+├── .github/
+│   └── workflows/
+│       └── smoke.yml           # ✅ Smoke Tests CI
+├── app/                         # FastAPI Application
+│   ├── main.py                  # API Entry Point
+│   └── [modules]
+├── tests/
+│   └── test_smoke_generation.py # Smoke Test Suite
+├── docker-compose.yml           # Local Development Stack
+├── requirements.txt             # Dependencies
+├── requirements-dev.txt         # Dev Dependencies
+└── README.md                    # This File
 ```
+
+---
+
+## 🛠️ Quick Start
+
+### Prerequisites
+- **Python 3.11+**
+- **Docker & Docker Compose**
+- **Git**
+
+### 1️⃣ Clone & Install
+```bash
+git clone https://github.com/1napz/crystalcastleX.git
+cd crystalcastleX
+```
+
+### 2️⃣ Start Development Stack
+```bash
+docker compose build
+docker compose up -d
+```
+
+### 3️⃣ Verify Service
+```bash
+curl http://localhost:8000/v1/status
+```
+
+### 4️⃣ Run Smoke Tests
+```bash
+pip install -r requirements-dev.txt
+pytest -q tests/test_smoke_generation.py -v
+```
+
+---
+
+## 🧪 CI/CD — Smoke Tests
+
+Every push to `main` and every Pull Request automatically runs:
+1. 📥 Checkout code
+2. 🐍 Set up Python 3.11
+3. 📦 Cache dependencies
+4. 🐳 Build & start Docker stack
+5. ✅ Wait for service health (`/v1/status`)
+6. 🧪 Run smoke tests
+7. 🧹 Tear down stack
+
+> **Badge:** [![Smoke Tests](https://github.com/1napz/crystalcastleX/actions/workflows/smoke.yml/badge.svg)](https://github.com/1napz/crystalcastleX/actions/workflows/smoke.yml)
+
+---
 
 ## 🔧 Configuration
 
-Key environment variables required:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `API_KEY` | Your API key for AI services | - |
-| `PORT` | Server port | `3000` |
-| `NODE_ENV` | Environment mode | `development` |
-
-## 🧪 Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
+### Environment Variables
+```env
+API_BASE=http://localhost:8000
+X_API_KEY=local-dev-key
 ```
+
+### API Endpoints
+| Endpoint | Description |
+|---|---|
+| `/v1/status` | Service health check |
+| `/docs` | Auto-generated API documentation |
+
+---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push: `git push -u origin feature/amazing-feature`
+5. Open Pull Request
+
+> ✅ All PRs automatically run Smoke Tests — ensure they pass before merge.
+
+---
+
+## 📋 Roadmap
+
+- [ ] 🧠 MCP Server integration
+- [ ] 🤖 AI Agent workflow templates
+- [ ] 📊 Enhanced dashboard & metrics
+- [ ] 🔐 OAuth2 / JWT Authentication
+- [ ] ☁️ Production deployment guides
+
+---
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
-
-## 👥 Team
-
-**Zyntro Media AI** - [https://zyntro-media.art/](https://zyntro-media.art/)
-
-## 🙏 Acknowledgments
-
-- AI models and technologies that power Crystal Castle
-- Community contributors and supporters
-
-## 📬 Contact
-
-- Website: https://zyntro-media.art/
-- GitHub: https://github.com/Zyntro-Media-AI
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
+
+## 💬 Support
+
+- 📋 [Issues](https://github.com/1napz/crystalcastleX/issues)
+- 📖 [Actions / CI Status](https://github.com/1napz/crystalcastleX/actions)
+- 🏠 Repository: **github.com/1napz/crystalcastleX**
+
+---
+
+<p align="center">
+  <i>Built with ❤️ by the crystalcastleX team</i>
+</p>
+```
+
+---
+
+✅ **README.md Ready!** Comprehensive, professional, and aligned with your Smoke Tests + FastAPI + Docker setup.
+
+### 📋 Quick Facts Included
+- ✅ Project overview & features
+- ✅ One-command quick start
+- ✅ Smoke Tests CI explanation + badge
+- ✅ Project structure & endpoints
+- ✅ Contributing guide & roadmap
+- ✅ Links to issues, actions, and repo
+
+Want me to **add shields/badges at the top**, **adjust the tech stack section**, or **save this directly to a PR**? 🚀📄
