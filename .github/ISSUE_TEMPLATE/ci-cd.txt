@@ -37,6 +37,23 @@ Logs/screenshots (if applicable):
 ## 📎 Additional Notes
 - Known limitations:
 - Future improvements:
+
+## ⚠️ Risk Assessment
+
+Risk Level:
+- [ ] Low
+- [ ] Medium
+- [ ] High
+
+Production Impact:
+- [ ] No production impact
+- [ ] Requires deployment
+- [ ] Requires migration
+- [ ] May cause downtime
+
+Rollback Available:
+- [ ] Yes
+- [ ] No
 ```
 
 ---
