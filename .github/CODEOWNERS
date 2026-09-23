@@ -1,11 +1,11 @@
-# เจ้าของไฟล์ทั้งหมดใน repo
-*       @crystalcastle-team
+# Owner for entire repo
+*  @crystalcastle-team
 
-# เจ้าของไฟล์เฉพาะโฟลเดอร์ docs
-/docs/* @docs-team
+# Owner for docs folder
+/docs/  @docs-team
 
-# เจ้าของไฟล์ .js
-*.js    @agents-team
+# Owner for JavaScript files
+*.js  @agents-team
 
-# เจ้าของไฟล์ .py
-*.py    @develop-team
+# Owner for Python files
+*.py  @develop-team
