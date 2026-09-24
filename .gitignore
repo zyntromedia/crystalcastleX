@@ -62,9 +62,14 @@ next-env.d.ts
 *.tmp
 .cache/# Environment / Secrets
 # =========================
+# Never commit
+# =========================
 .env
-.env.*
-!.env.example
+.env.local
+.env.production
+secrets
+tokens
+private keys
 
 # =========================
 # Vercel
