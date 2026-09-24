@@ -18,13 +18,23 @@ jobs:
     steps:
       - name: Verify Operator
         env:
-          ALLOWED_USERS: "1napz"
+          ALLOWED_USERS: "1napz,zyntromedia,ZyntroAI,SNAP,nobizzhome,chris"
         run: |
           ALLOWED_USERS=("1napz")
           if [[ ! " ${ALLOWED_USERS[*]} " =~ " ${{ github.actor }} " ]]; then
             echo "Unauthorized user"
             exit 1
           fi
+       - name: MERGE OPERATORS
+        env:
+          ALLOWED_USERS: "1napz,zyntromedia,crystal-admin"
+        run: |
+                    ALLOWED_USERS: ${{ vars.MERGE_OPERATORS }}
+          if [[ ! " ${ALLOWED_USERS[*]} " =~ " ${{ github.actor }} " ]]; then
+            echo "Unauthorized user"
+            exit 1
+          fi
+       
 
       - name: Check PR Status
         uses: actions/github-script@v7
