@@ -1,41 +1,73 @@
-name: Chat-Merge-Request
+name: Chat Merge Request
 
 on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Pull Request Number'
+        description: "Pull Request Number"
         required: true
+        type: string
+
+permissions:
+  pull-requests: write
+  contents: write
 
 jobs:
-  request-approval:
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for Approval
+      - name: Verify Operator
+        env:
+          ALLOWED_USERS: "1napz"
         run: |
-          echo "⏳ Waiting for approval from Nattapong Pornlumfah..."
-          # ที่นี่สามารถเชื่อมกับระบบ Chat/Board เพื่อรอการตอบกลับ
-          # เช่น webhook หรือ API ที่บันทึกว่า 'อนุมัติ' หรือ 'ปฏิเสธ'
-      
-      - name: Validate Approver
-        run: |
-          if [ "${{ github.actor }}" != "1napz" ]; then
-            echo "❌ Merge denied: Only Nattapong Pornlumfah can approve."
+          ALLOWED_USERS=("1napz")
+          if [[ ! " ${ALLOWED_USERS[*]} " =~ " ${{ github.actor }} " ]]; then
+            echo "Unauthorized user"
             exit 1
           fi
-          echo "✅ Approval granted by Nattapong Pornlumfah"
 
-  merge-pr:
-    needs: request-approval
-    runs-on: ubuntu-latest
-    steps:
-      - name: Merge Pull Request
-        uses: actions/github-script@v6
+      - name: Check PR Status
+        uses: actions/github-script@v7
         with:
           script: |
-            github.pulls.merge({
+            const pr = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: ${{ github.event.inputs.pr_number }},
+              pull_number: Number("${{ inputs.pr_number }}")
+            });
+            if (pr.data.draft) {
+              core.setFailed("PR is Draft");
+            }
+            if (pr.data.state !== "open") {
+              core.setFailed("PR is not open");
+            }
+            if (!pr.data.mergeable) {
+              core.setFailed("PR is not mergeable");
+            }
+      - name: Check Approvals
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reviews = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: Number("${{ inputs.pr_number }}")
+            });
+            const approved = reviews.data.filter(r => r.state === 'APPROVED');
+            if (approved.length === 0) {
+              core.setFailed('PR has no approvals');
+            }
+  merge:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: Number("${{ inputs.pr_number }}"),
               merge_method: "squash"
-            })
+            });
