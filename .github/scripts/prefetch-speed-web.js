@@ -1,9 +1,0 @@
-const rules = {
-  prefetch: [
-    {
-      source: "document",
-      where: { href_matches: "/*" },
-      eagerness: "moderate"
-    }
-  ]
-}
