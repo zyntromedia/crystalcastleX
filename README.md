@@ -1,6 +1,6 @@
 
 ```markdown
-# @snapzreview — AI Video Generator
+# ZyntroMedia — AI Video Generator
 
 **@snapzreview** คือเครื่องมือสร้างวิดีโอสินค้าด้วย AI  
 อัปโหลดรูป → AI เขียน Prompt → สร้างวิดีโอ → พร้อมแชร์ลง TikTok/Shopee ทันที  
